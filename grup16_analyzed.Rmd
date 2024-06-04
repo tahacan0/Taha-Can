@@ -1,0 +1,296 @@
+```{r}
+require(data.table)
+require(lubridate)
+require(forecast)
+require(skimr)
+require(repr)
+require(openxlsx) #library(openxlsx)
+require(ggplot2)
+require(data.table)
+require(skimr)
+require(GGally)
+require(ggcorrplot)
+require(forecast)
+
+library(data.table)
+library(lubridate)
+library(forecast)
+library(skimr)
+library(repr)
+library(readxl)
+todays_date=Sys.Date()
+forecast_date=todays_date+1
+
+
+options(repr.plot.width=12.7, repr.plot.height=8.5)
+
+data_path2='/Users/Taha/Desktop/processed_weather.csv'
+weather_info=fread(data_path2)
+
+weather_info[,datetime:=ymd(date)+dhours(hour)]
+weather_info=weather_info[order(datetime)]
+
+head(weather_info,25)
+
+data_path='/Users/Taha/Desktop/production.csv'
+production=fread(data_path)
+production[, datetime := ymd(date) + dhours(hour)]
+production=production[order(datetime)]
+
+
+head(production,25)
+str(production)
+
+```
+
+```{r}
+hourly_series=weather_info[,list(dswrf_surface=sum(dswrf_surface)/25,tcdc_low.cloud.layer
+=sum(tcdc_low.cloud.layer)/25,tcdc_middle.cloud.layer
+=sum(tcdc_middle.cloud.layer
+)/25,tcdc_high.cloud.layer
+=sum(tcdc_high.cloud.layer
+)/25,tcdc_entire.atmosphere
+=sum(tcdc_entire.atmosphere
+)/25,uswrf_top_of_atmosphere=sum(uswrf_top_of_atmosphere)/25,csnow_surface=sum(csnow_surface)/25,dlwrf_surface=sum(dlwrf_surface)/25,uswrf_surface=sum(uswrf_surface)/25,tmp_surface=sum(tmp_surface)/25),list(date,hour)]
+
+hourly_series[,datetime:=ymd(date)+dhours(hour)]
+#daily_series=consumption[,list(total=sum(Consumption),max_t=max(T_1),weighted_t=sum(Consumption*T_#1)/sum(Consumption)),list(Date)]
+#head(daily_series)
+
+head(hourly_series)
+
+```
+
+
+```{r}
+mergeddata<-merge(hourly_series,production,by="datetime",all.x=T)
+head(mergeddata)
+#template_dt = unique(weather_data[,list(date,hour)])
+#template_dt = merge(template_dt,production_data,by=c('date','hour'),all.x=T)
+
+
+
+newdata=mergeddata
+
+newdata=newdata[,-c("date.y")]
+newdata=newdata[,-c("hour.y")]
+
+
+basedata=newdata[,-c("date.x")]
+basedata=basedata[,-c("hour.x")]
+basedata=basedata[,-c("datetime")]
+
+head(newdata)
+head(basedata)
+
+```
+
+
+```{r}
+
+mergeddata=mergeddata[,-c("date.y")]
+mergeddata=mergeddata[,-c("hour.y")]
+
+newdata2=mergeddata[mergeddata$date.x >="2022-01-01",]
+newdata3=newdata2
+newdata3=newdata3[newdata3$hour.x >6 & newdata3$hour.x<19,]
+newdata3
+
+
+datapn<-data.table(newdata)
+datapn2<-newdata2
+dataph5<-datapn2[hour.x==5]
+dataph6<-datapn2[ hour.x==6]
+dataph7<-datapn2[hour.x==7]
+dataph8<-datapn2[ hour.x==8]
+dataph9<-datapn2[hour.x==9]
+dataph10<-datapn2[ hour.x==10]
+dataph11<-datapn2[ hour.x==11]
+dataph12<-datapn2[hour.x==12]
+dataph13<-datapn2[ hour.x==13]
+dataph14<-datapn2[hour.x==14]
+dataph15<-datapn2[ hour.x==15]
+dataph16<-datapn2[ hour.x==16]
+dataph17<-datapn2[hour.x==17]
+dataph18<-datapn2[ hour.x==18]
+dataph19<-datapn2[ hour.x==19]
+dataph20<-datapn2[hour.x==20]
+
+```
+
+
+```{r}
+datapn3<-data.table(newdata3)
+#head(datapn,15)
+
+datapn3[,saat:=as.factor(hour(datetime))]
+
+lag24<-shift(datapn3$production, n=24L, fill=NA)
+datapn3$lag24<-lag24
+lag23<-shift(datapn3$production, n=23L, fill=NA)
+datapn3$lag23<-lag23
+lag25<-shift(datapn3$production, n=25L, fill=NA)
+datapn3$lag25<-lag25
+
+lag36<-shift(datapn3$production, n=36L, fill=NA)
+datapn3$lag36<-lag36
+lag35<-shift(datapn3$production, n=35L, fill=NA)
+datapn3$lag35<-lag35
+lag37<-shift(datapn3$production, n=37L, fill=NA)
+datapn3$lag37<-lag37
+
+lag15<-shift(datapn3$production, n=15L, fill=NA)
+datapn3$lag15<-lag15
+
+lag14<-shift(datapn3$production, n=14L, fill=NA)
+datapn3$lag14<-lag14
+lag13<-shift(datapn3$production, n=13L, fill=NA)
+datapn3$lag13<-lag13
+lag12<-shift(datapn3$production, n=12L, fill=NA)
+datapn3$lag12<-lag12
+lag11<-shift(datapn3$production, n=11L, fill=NA)
+datapn3$lag11<-lag11
+lag16<-shift(datapn3$production, n=16L, fill=NA)
+datapn3$lag16<-lag16
+lag24<-shift(datapn3$production, n=24L, fill=NA)
+datapn3$lag24<-lag24
+lag23<-shift(datapn3$production, n=23L, fill=NA)
+datapn3$lag23<-lag23
+lag25<-shift(datapn3$production, n=25L, fill=NA)
+datapn3$lag25<-lag25
+lag8<-shift(datapn3$production, n=8L, fill=NA)
+datapn3$lag8<-lag8
+lag1<-shift(datapn3$production, n=1L, fill=NA)
+datapn3$lag1<-lag1
+lag2<-shift(datapn3$production, n=2L, fill=NA)
+datapn3$lag2<-lag2
+datapn3$hoursoftheday<-as.factor(datapn3$hour.x)
+datapn3$season<-as.factor(quarter(datapn3$date.x))
+datapn3[,gun:=as.character(day(date.x))]
+datapn3[,hafta:=as.character(week(date.x))]
+datapn3[,tmax:=max(tmp_surface),by=date.x]
+datapn3[,tmin:=min(tmp_surface),by=date.x]
+trend<-c(1:nrow((datapn3)))
+datapn3$trend<-trend
+lag1dswrf<-shift(datapn3$dswrf_surface, n=1L, fill=NA)
+datapn3$lag1dswrf<-lag1dswrf
+lag12dswrf<-shift(datapn3$dswrf_surface, n=12L, fill=NA)
+datapn3$lag12dswrf<-lag12dswrf
+
+#datapn[,trend:=c(1:140),by=date]
+#datapn$sun[datapn$hour>7 & datapn$hour<19]<-1
+#datapn[is.na(sun),sun:=0]
+#datapn$sun<-as.factor(datapn$sun)
+#datapn$month<-as.facto?(month(datapn$date))
+```
+
+
+```{r}
+
+
+lm12<-lm(production~dswrf_surface+tmp_surface+tcdc_entire.atmosphere+lag36+hoursoftheday,data = datapn3)
+summary(lm12)
+checkresiduals(lm12)
+
+tmp2=copy(datapn3)
+tmp2=tmp2[tmp2$date.x >="2024-05-1",]
+
+tmp2[,actual:=production]
+
+tmp2[,predicted_trend:=predict(lm12,tmp2)]
+
+tmp2[,residual_trend:=actual-predicted_trend]
+tmp2[,hour.y:=hour.x]
+tmp2[,date.y:=date.x]
+tmp2
+a=tmp2[tmp2$date.x >="2024-05-10",]
+ggplot(tmp2 ,aes(x=hour.x)) +
+        geom_line(aes(y=actual,color='real')) + 
+        geom_line(aes(y=predicted_trend,color='predicted'))
+#head(tmp)
+
+newdata3=tmp2[tmp2$hour.x >=6 & tmp2$hour.x<=19,]
+deme=newdata3[newdata3$date.x<"2024-05-9"]
+deme
+deneme=sum(deme$residual_trend)
+deneme
+
+
+```
+```{r}
+# Üretim deðerlerinin zaman serisi grafiði
+ggplot(tmp2, aes(x = datetime)) +
+    geom_line(aes(y = actual, color = 'Gerçek Deðerler')) + 
+    geom_line(aes(y = predicted_trend, color = 'Tahmin Edilen Deðerler')) +
+    labs(title = "Gerçek ve Tahmin Edilen Üretim Deðerleri",
+         x = "Tarih ve Saat",
+         y = "Üretim",
+         color = "Deðerler") +
+    theme_minimal()
+
+```
+
+```{r}
+# Hatalarýn daðýlýmýný gösteren histogram
+ggplot(tmp2, aes(x = residual_trend)) +
+    geom_histogram(binwidth = 1, fill = 'blue', alpha = 0.7, color = 'black') +
+    labs(title = "Tahmin Modeli Hata Daðýlýmý",
+         x = "Hata (Residuals)",
+         y = "Frekans") +
+    theme_minimal()
+
+```
+
+```{r}
+# Korelasyon matrisi
+library(ggcorrplot)
+
+# Tahmin modeli için kullanýlacak deðiþkenleri seçiyoruz
+cor_data <- datapn3[, .(dswrf_surface, tmp_surface, tcdc_entire.atmosphere, lag36, production)]
+
+# Korelasyon matrisini hesaplýyoruz
+cor_matrix <- cor(cor_data, use = "complete.obs")
+
+# Korelasyon matrisini görselleþtiriyoruz
+ggcorrplot(cor_matrix, method = "circle", lab = TRUE, title = "Korelasyon Matrisi")
+
+```
+
+```{r}
+# Model Performans Grafiði
+ggplot(tmp2, aes(x = datetime)) +
+  geom_line(aes(y = actual, color = 'Gerçek Deðerler')) + 
+  geom_line(aes(y = predicted_trend, color = 'Tahmin Edilen Deðerler')) +
+  labs(title = "Gerçek ve Tahmin Edilen Üretim Deðerleri",
+       x = "Tarih ve Saat",
+       y = "Üretim",
+       color = "Deðerler") +
+  theme_minimal()
+```
+
+```{r}
+# Hatalarýn Daðýlýmý
+ggplot(tmp2, aes(x = residual_trend)) +
+  geom_histogram(binwidth = 1, fill = 'blue', alpha = 0.7, color = 'black') +
+  labs(title = "Tahmin Modeli Hata Daðýlýmý",
+       x = "Hata (Residuals)",
+       y = "Frekans") +
+  theme_minimal()
+```
+
+```{r}
+cor_data = datapn3[, .(dswrf_surface, tmp_surface, tcdc_entire.atmosphere, lag36, production)]
+cor_matrix = cor(cor_data, use = "complete.obs")
+ggcorrplot(cor_matrix, method = "circle", lab = TRUE, title = "Korelasyon Matrisi")
+```
+```{r}
+# ACF ve PACF Grafikleri
+par(mfrow = c(1, 2)) # Grafikleri yan yana yerleþtirmek için
+
+residuals_no_na <- na.omit(tmp2$residual_trend)
+
+acf(residuals_no_na, main = "ACF - Residuals")
+pacf(residuals_no_na, main = "PACF - Residuals")
+```
+
+
